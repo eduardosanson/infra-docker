@@ -1,0 +1,35 @@
+project:
+     name: hermes
+
+server.port: 8081
+spring:
+     data.mongodb:
+              authentication-database: # Authentication database name.
+              database: hermesdb # Database name.
+              host: localhost # Mongo server host. Cannot be set with uri.
+              port: 27017 # Mongo server port. Cannot be set with uri.
+     application:
+         name: ${project.name}
+     cloud.stream:
+               bindings:
+                   billingNotifyInput:
+                          destination: ${project.name}.billingNotify
+                          group: ${project.name}.billingNotifyListener
+               rabbit.bindings:
+                     billingNotifyInput:
+                       consumer:
+                         maxAttempts: 10
+                         autoBindDlq: true
+                         republishToDlq: true
+billingNotifyInput:
+  queue:
+    dlq:  ${spring.cloud.stream.bindings.billingNotifyInput.destination}.${spring.cloud.stream.bindings.billingNotifyInput.group}.dlq
+
+info.project:
+        name: ${project.name}
+        description: ${project.description}
+        version: ${project.version}
+
+sms:
+  url: http://localhost:8081/mockServer
+  send: /sms
